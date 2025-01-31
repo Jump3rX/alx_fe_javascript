@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showRandomQuote();
   }
   createAddQuoteForm();
-  createImportExportButtons();
 });
 
 function saveQuotes() {
@@ -70,21 +69,12 @@ function addQuote() {
   }
 }
 
-function createImportExportButtons() {
-  const container = document.createElement("div");
-  container.innerHTML = `
-    <button id="exportQuotes">Export Quotes</button>
-    <input type="file" id="importFile" accept=".json" />
-  `;
-  document.body.appendChild(container);
-
-  document
-    .getElementById("exportQuotes")
-    .addEventListener("click", exportToJsonFile);
-  document
-    .getElementById("importFile")
-    .addEventListener("change", importFromJsonFile);
-}
+document
+  .getElementById("exportQuotes")
+  .addEventListener("click", exportToJsonFile);
+document
+  .getElementById("importFile")
+  .addEventListener("change", importFromJsonFile);
 
 function exportToJsonFile() {
   const blob = new Blob([JSON.stringify(quotes, null, 2)], {
