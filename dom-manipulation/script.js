@@ -38,13 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
   createAddQuoteForm();
 
   populateCategories();
-  syncWithServer();
+  fetchQuotesFromServer();
 });
 
 function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
   populateCategories();
-  syncWithServer();
 }
 
 function createAddQuoteForm() {
@@ -145,25 +144,18 @@ function populateCategories() {
 function filterQuotes() {
   const selectedCategory = document.getElementById("categoryFilter").value;
   localStorage.setItem("selectedCategory", selectedCategory);
-
   const quoteDisplay = document.getElementById("quoteDisplay");
+  quoteDisplay.innerHTML = "";
 
-  const existingQuotes = Array.from(quoteDisplay.children).map(
-    (el) => el.textContent
-  );
-  const filteredQuotes =
+  let filteredQuotes =
     selectedCategory === "all"
       ? quotes
       : quotes.filter((q) => q.category === selectedCategory);
-
-  const newQuotesText = filteredQuotes.map(
-    (q) => `"${q.text}" - ${q.category}`
-  );
-  if (JSON.stringify(existingQuotes) === JSON.stringify(newQuotesText)) {
+  if (filteredQuotes.length === 0) {
+    quoteDisplay.innerHTML = `<p>No quotes available for this category.</p>`;
     return;
   }
 
-  quoteDisplay.innerHTML = "";
   filteredQuotes.forEach((quote) => {
     const quoteElement = document.createElement("p");
     quoteElement.textContent = `"${quote.text}" - ${quote.category}`;
@@ -171,19 +163,15 @@ function filterQuotes() {
   });
 }
 
-function syncWithServer() {
+function fetchQuotesFromServer() {
   fetch(SERVER_URL)
     .then((response) => response.json())
     .then((data) => {
       console.log("Fetched server data:", data);
-
       const existingTexts = new Set(quotes.map((q) => q.text));
-      let newQuotes = data.map((post) => ({
-        text: post.title,
-        category: "General",
-      }));
-
-      newQuotes = newQuotes.filter((q) => !existingTexts.has(q.text));
+      const newQuotes = data
+        .map((post) => ({ text: post.title, category: "General" }))
+        .filter((q) => !existingTexts.has(q.text));
 
       if (newQuotes.length > 0) {
         quotes.push(...newQuotes);
@@ -193,6 +181,6 @@ function syncWithServer() {
     .catch((error) => console.error("Error fetching server data:", error));
 }
 
-setInterval(syncWithServer, 30000);
+setInterval(fetchQuotesFromServer, 10 * 60 * 1000); // Sync every 10min
 
 populateCategories();
