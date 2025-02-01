@@ -16,6 +16,7 @@ const quotes = JSON.parse(localStorage.getItem("quotes")) || [
 
 const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
 
+// Function to show a random quote
 function showRandomQuote() {
   const quoteDisplay = document.getElementById("quoteDisplay");
   const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -41,11 +42,14 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchQuotesFromServer();
 });
 
+// Function to save quotes to local storage
 function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
   populateCategories();
+  postQuotesToServer(); // Post quotes to the server after saving locally
 }
 
+// Function to create the "Add Quote" form
 function createAddQuoteForm() {
   const formContainer = document.createElement("div");
   formContainer.innerHTML = `
@@ -58,6 +62,7 @@ function createAddQuoteForm() {
   document.getElementById("addQuoteBtn").addEventListener("click", addQuote);
 }
 
+// Function to add a new quote
 function addQuote() {
   const newQuoteText = document.getElementById("newQuoteText").value.trim();
   const newQuoteCategory = document
@@ -75,6 +80,7 @@ function addQuote() {
   }
 }
 
+// Function to export quotes to a JSON file
 document
   .getElementById("exportQuotes")
   .addEventListener("click", exportToJsonFile);
@@ -94,6 +100,7 @@ function exportToJsonFile() {
   document.body.removeChild(link);
 }
 
+// Function to import quotes from a JSON file
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = function (event) {
@@ -113,6 +120,7 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
+// Function to populate categories in the filter dropdown
 function populateCategories() {
   let categoryFilter = document.getElementById("categoryFilter");
   if (!categoryFilter) {
@@ -141,6 +149,7 @@ function populateCategories() {
   categoryFilter.value = localStorage.getItem("selectedCategory") || "all";
 }
 
+// Function to filter quotes by category
 function filterQuotes() {
   const selectedCategory = document.getElementById("categoryFilter").value;
   localStorage.setItem("selectedCategory", selectedCategory);
@@ -163,6 +172,7 @@ function filterQuotes() {
   });
 }
 
+// Function to fetch quotes from the server
 async function fetchQuotesFromServer() {
   try {
     const response = await fetch(SERVER_URL);
@@ -185,6 +195,31 @@ async function fetchQuotesFromServer() {
   }
 }
 
+// Function to post quotes to the server
+async function postQuotesToServer() {
+  try {
+    const response = await fetch(SERVER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(quotes),
+    });
+
+    if (response.ok) {
+      console.log("Quotes posted to the server successfully.");
+      notifyUser("Quotes synced with the server.");
+    } else {
+      console.error("Failed to post quotes to the server.");
+      notifyUser("Failed to sync quotes with the server.", true);
+    }
+  } catch (error) {
+    console.error("Error posting quotes to the server:", error);
+    notifyUser("Failed to sync quotes with the server.", true);
+  }
+}
+
+// Function to notify the user
 function notifyUser(message, isError = false) {
   const notification = document.createElement("div");
   notification.textContent = message;
@@ -203,6 +238,6 @@ function notifyUser(message, isError = false) {
   }, 5000);
 }
 
-setInterval(fetchQuotesFromServer, 10 * 60 * 1000); // Sync every 10min
+setInterval(fetchQuotesFromServer, 10 * 60 * 1000);
 
 populateCategories();
