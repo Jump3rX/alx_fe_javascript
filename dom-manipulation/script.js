@@ -177,29 +177,31 @@ async function fetchQuotesFromServer() {
     if (newQuotes.length > 0) {
       quotes.push(...newQuotes);
       saveQuotes();
+      notifyUser("New quotes have been added from the server.");
     }
   } catch (error) {
     console.error("Error fetching server data:", error);
+    notifyUser("Failed to fetch quotes from the server.", true);
   }
 }
 
-// function fetchQuotesFromServer() {
-//   fetch(SERVER_URL)
-//     .then((response) => response.json())
-//     .then((data) => {
-//       console.log("Fetched server data:", data);
-//       const existingTexts = new Set(quotes.map((q) => q.text));
-//       const newQuotes = data
-//         .map((post) => ({ text: post.title, category: "General" }))
-//         .filter((q) => !existingTexts.has(q.text));
+function notifyUser(message, isError = false) {
+  const notification = document.createElement("div");
+  notification.textContent = message;
+  notification.style.position = "fixed";
+  notification.style.bottom = "20px";
+  notification.style.right = "20px";
+  notification.style.padding = "10px";
+  notification.style.backgroundColor = isError ? "red" : "green";
+  notification.style.color = "white";
+  notification.style.borderRadius = "5px";
+  notification.style.zIndex = "1000";
+  document.body.appendChild(notification);
 
-//       if (newQuotes.length > 0) {
-//         quotes.push(...newQuotes);
-//         saveQuotes();
-//       }
-//     })
-//     .catch((error) => console.error("Error fetching server data:", error));
-// }
+  setTimeout(() => {
+    document.body.removeChild(notification);
+  }, 5000);
+}
 
 setInterval(fetchQuotesFromServer, 10 * 60 * 1000); // Sync every 10min
 
