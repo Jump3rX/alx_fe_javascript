@@ -14,6 +14,8 @@ const quotes = JSON.parse(localStorage.getItem("quotes")) || [
   { text: "Happiness depends upon ourselves.", category: "Happiness" },
 ];
 
+const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
+
 function showRandomQuote() {
   const quoteDisplay = document.getElementById("quoteDisplay");
   const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -36,11 +38,13 @@ document.addEventListener("DOMContentLoaded", () => {
   createAddQuoteForm();
 
   populateCategories();
+  syncWithServer();
 });
 
 function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
   populateCategories();
+  syncWithServer();
 }
 
 function createAddQuoteForm() {
@@ -141,18 +145,45 @@ function populateCategories() {
 function filterQuotes() {
   const selectedCategory = document.getElementById("categoryFilter").value;
   localStorage.setItem("selectedCategory", selectedCategory);
-  const quoteDisplay = document.getElementById("quoteDisplay");
-  quoteDisplay.innerHTML = "";
 
+  const quoteDisplay = document.getElementById("quoteDisplay");
+
+  const existingQuotes = Array.from(quoteDisplay.children).map(
+    (el) => el.textContent
+  );
   const filteredQuotes =
     selectedCategory === "all"
       ? quotes
       : quotes.filter((q) => q.category === selectedCategory);
+
+  const newQuotesText = filteredQuotes.map(
+    (q) => `"${q.text}" - ${q.category}`
+  );
+  if (JSON.stringify(existingQuotes) === JSON.stringify(newQuotesText)) {
+    return;
+  }
+
+  quoteDisplay.innerHTML = "";
   filteredQuotes.forEach((quote) => {
     const quoteElement = document.createElement("p");
     quoteElement.textContent = `"${quote.text}" - ${quote.category}`;
     quoteDisplay.appendChild(quoteElement);
   });
 }
+
+function syncWithServer() {
+  fetch(SERVER_URL)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Fetched server data:", data);
+      quotes.push(
+        ...data.map((post) => ({ text: post.title, category: "General" }))
+      );
+      saveQuotes();
+    })
+    .catch((error) => console.error("Error fetching server data:", error));
+}
+
+setInterval(syncWithServer, 30000);
 
 populateCategories();
