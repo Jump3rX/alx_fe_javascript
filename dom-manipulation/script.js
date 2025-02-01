@@ -240,7 +240,9 @@ function notifyUser(message, isError = false) {
 
 setInterval(fetchQuotesFromServer, 10 * 60 * 1000);
 function syncQuotes() {
-  fetchQuotesFromServer();
+  fetchQuotesFromServer().then(() => {
+    notifyUser("Quotes synced with server!");
+  });
 }
 
 setInterval(syncQuotes, 20 * 60 * 1000);
