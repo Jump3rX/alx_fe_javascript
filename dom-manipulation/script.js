@@ -34,10 +34,13 @@ document.addEventListener("DOMContentLoaded", () => {
     showRandomQuote();
   }
   createAddQuoteForm();
+  createImportExportButtons();
+  populateCategories();
 });
 
 function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
+  populateCategories();
 }
 
 function createAddQuoteForm() {
@@ -69,12 +72,21 @@ function addQuote() {
   }
 }
 
-document
-  .getElementById("exportQuotes")
-  .addEventListener("click", exportToJsonFile);
-document
-  .getElementById("importFile")
-  .addEventListener("change", importFromJsonFile);
+function createImportExportButtons() {
+  const container = document.createElement("div");
+  container.innerHTML = `
+    <button id="exportQuotes">Export Quotes</button>
+    <input type="file" id="importFile" accept=".json" />
+  `;
+  document.body.appendChild(container);
+
+  document
+    .getElementById("exportQuotes")
+    .addEventListener("click", exportToJsonFile);
+  document
+    .getElementById("importFile")
+    .addEventListener("change", importFromJsonFile);
+}
 
 function exportToJsonFile() {
   const blob = new Blob([JSON.stringify(quotes, null, 2)], {
@@ -106,3 +118,44 @@ function importFromJsonFile(event) {
   };
   fileReader.readAsText(event.target.files[0]);
 }
+
+function populateCategories() {
+  const categoryFilter = document.getElementById("categoryFilter");
+  if (!categoryFilter) {
+    const filterContainer = document.createElement("div");
+    filterContainer.innerHTML = `
+      <select id="categoryFilter" onchange="filterQuotes()">
+        <option value="all">All Categories</option>
+      </select>
+    `;
+    document.body.insertBefore(
+      filterContainer,
+      document.getElementById("quoteDisplay")
+    );
+  }
+
+  const uniqueCategories = [...new Set(quotes.map((q) => q.category))];
+  const selectElement = document.getElementById("categoryFilter");
+  selectElement.innerHTML = `<option value="all">All Categories</option>`;
+  uniqueCategories.forEach((category) => {
+    selectElement.innerHTML += `<option value="${category}">${category}</option>`;
+  });
+  selectElement.value = localStorage.getItem("selectedCategory") || "all";
+}
+
+function filterQuotes() {
+  const selectedCategory = document.getElementById("categoryFilter").value;
+  localStorage.setItem("selectedCategory", selectedCategory);
+  const quoteDisplay = document.getElementById("quoteDisplay");
+  quoteDisplay.innerHTML = "";
+
+  const filteredQuotes =
+    selectedCategory === "all"
+      ? quotes
+      : quotes.filter((q) => q.category === selectedCategory);
+  filteredQuotes.forEach((quote) => {
+    quoteDisplay.innerHTML += `<p>"${quote.text}" - <strong>${quote.category}</strong></p>`;
+  });
+}
+
+populateCategories();
