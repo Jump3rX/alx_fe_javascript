@@ -72,21 +72,12 @@ function addQuote() {
   }
 }
 
-function createImportExportButtons() {
-  const container = document.createElement("div");
-  container.innerHTML = `
-    <button id="exportQuotes">Export Quotes</button>
-    <input type="file" id="importFile" accept=".json" />
-  `;
-  document.body.appendChild(container);
-
-  document
-    .getElementById("exportQuotes")
-    .addEventListener("click", exportToJsonFile);
-  document
-    .getElementById("importFile")
-    .addEventListener("change", importFromJsonFile);
-}
+document
+  .getElementById("exportQuotes")
+  .addEventListener("click", exportToJsonFile);
+document
+  .getElementById("importFile")
+  .addEventListener("change", importFromJsonFile);
 
 function exportToJsonFile() {
   const blob = new Blob([JSON.stringify(quotes, null, 2)], {
@@ -120,20 +111,6 @@ function importFromJsonFile(event) {
 }
 
 function populateCategories() {
-  const categoryFilter = document.getElementById("categoryFilter");
-  if (!categoryFilter) {
-    const filterContainer = document.createElement("div");
-    filterContainer.innerHTML = `
-      <select id="categoryFilter" onchange="filterQuotes()">
-        <option value="all">All Categories</option>
-      </select>
-    `;
-    document.body.insertBefore(
-      filterContainer,
-      document.getElementById("quoteDisplay")
-    );
-  }
-
   const uniqueCategories = [...new Set(quotes.map((q) => q.category))];
   const selectElement = document.getElementById("categoryFilter");
   selectElement.innerHTML = `<option value="all">All Categories</option>`;
