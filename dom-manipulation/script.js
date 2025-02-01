@@ -176,10 +176,19 @@ function syncWithServer() {
     .then((response) => response.json())
     .then((data) => {
       console.log("Fetched server data:", data);
-      quotes.push(
-        ...data.map((post) => ({ text: post.title, category: "General" }))
-      );
-      saveQuotes();
+
+      const existingTexts = new Set(quotes.map((q) => q.text));
+      let newQuotes = data.map((post) => ({
+        text: post.title,
+        category: "General",
+      }));
+
+      newQuotes = newQuotes.filter((q) => !existingTexts.has(q.text));
+
+      if (newQuotes.length > 0) {
+        quotes.push(...newQuotes);
+        saveQuotes();
+      }
     })
     .catch((error) => console.error("Error fetching server data:", error));
 }
