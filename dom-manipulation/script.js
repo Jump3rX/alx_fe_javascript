@@ -163,23 +163,43 @@ function filterQuotes() {
   });
 }
 
-function fetchQuotesFromServer() {
-  fetch(SERVER_URL)
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Fetched server data:", data);
-      const existingTexts = new Set(quotes.map((q) => q.text));
-      const newQuotes = data
-        .map((post) => ({ text: post.title, category: "General" }))
-        .filter((q) => !existingTexts.has(q.text));
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(SERVER_URL);
+    const data = await response.json();
+    console.log("Fetched server data:", data);
 
-      if (newQuotes.length > 0) {
-        quotes.push(...newQuotes);
-        saveQuotes();
-      }
-    })
-    .catch((error) => console.error("Error fetching server data:", error));
+    const existingTexts = new Set(quotes.map((q) => q.text));
+    const newQuotes = data
+      .map((post) => ({ text: post.title, category: "General" }))
+      .filter((q) => !existingTexts.has(q.text));
+
+    if (newQuotes.length > 0) {
+      quotes.push(...newQuotes);
+      saveQuotes();
+    }
+  } catch (error) {
+    console.error("Error fetching server data:", error);
+  }
 }
+
+// function fetchQuotesFromServer() {
+//   fetch(SERVER_URL)
+//     .then((response) => response.json())
+//     .then((data) => {
+//       console.log("Fetched server data:", data);
+//       const existingTexts = new Set(quotes.map((q) => q.text));
+//       const newQuotes = data
+//         .map((post) => ({ text: post.title, category: "General" }))
+//         .filter((q) => !existingTexts.has(q.text));
+
+//       if (newQuotes.length > 0) {
+//         quotes.push(...newQuotes);
+//         saveQuotes();
+//       }
+//     })
+//     .catch((error) => console.error("Error fetching server data:", error));
+// }
 
 setInterval(fetchQuotesFromServer, 10 * 60 * 1000); // Sync every 10min
 
