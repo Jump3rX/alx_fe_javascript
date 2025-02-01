@@ -239,5 +239,9 @@ function notifyUser(message, isError = false) {
 }
 
 setInterval(fetchQuotesFromServer, 10 * 60 * 1000);
+function syncQuotes() {
+  fetchQuotesFromServer();
+}
 
+setInterval(syncQuotes, 20 * 60 * 1000);
 populateCategories();
